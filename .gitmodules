@@ -1,3 +1,3 @@
-[submodule "RSSCN7"]
-	path = RSSCN7
-	url = https://github.com/palewithout/RSSCN7
+[submodule "playground/RSSCN7"]
+	path = playground/RSSCN7
+	url = https://github.com/palewithout/RSSCN7.git
