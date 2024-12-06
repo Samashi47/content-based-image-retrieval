@@ -1,0 +1,46 @@
+<mat-tab-group>
+  <mat-tab label="Simple search">
+    <mat-stepper [linear]="isLinear" #stepper>
+      <mat-step [stepControl]="firstFormGroup">
+        <form [formGroup]="firstFormGroup">
+          <ng-template matStepLabel>Upload your image</ng-template>
+          <mat-form-field class="input-container">
+            <input
+              matInput
+              [value]="fileName"
+              formControlName="firstCtrl"
+              placeholder="Select your image"
+              required
+              readonly
+            />
+
+            <button mat-icon-button color="primary" class="upload-btn">
+              <mat-icon>attach_file</mat-icon>
+            </button>
+            <input
+              type="file"
+              id="fileInput"
+              (change)="selectFile($event)"
+              name="fileInput"
+              formControlName="firstCtrl"
+              required
+            />
+          </mat-form-field>
+
+          <div>
+            <button mat-button matStepperNext>Next</button>
+          </div>
+        </form>
+      </mat-step>
+      <mat-step>
+        <ng-template matStepLabel>Results</ng-template>
+        <p>You are now done.</p>
+        <div>
+          <button mat-button matStepperPrevious>Back</button>
+          <button mat-button (click)="stepper.reset()">Reset</button>
+        </div>
+      </mat-step>
+    </mat-stepper>
+  </mat-tab>
+  <mat-tab label="Advanced search with relevance feedback"> Content 2 </mat-tab>
+</mat-tab-group>

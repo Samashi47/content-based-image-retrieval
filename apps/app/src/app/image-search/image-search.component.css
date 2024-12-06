@@ -1,0 +1,53 @@
+/* take remaining height */
+.mat-horizontal-content-container {
+  height: 100%;
+  margin: 0;
+  gap: 16px;
+  background-color: white;
+}
+
+.mat-stepper-horizontal {
+  margin-top: 8px;
+  height: 100%;
+  margin: 0;
+  gap: 16px;
+  background-color: white;
+}
+
+.mat-mdc-form-field {
+  margin-top: 16px;
+}
+
+.mat-toolbar-single-row {
+  height: auto !important;
+  background: transparent;
+  padding: 0;
+}
+
+.mat-toolbar-single-row button {
+  width: 100px;
+}
+
+.input-container {
+  width: 500px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#fileInput {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+.upload-btn {
+  position: absolute;
+  top: 8px;
+  right: 0;
+  bottom: 0;
+}
