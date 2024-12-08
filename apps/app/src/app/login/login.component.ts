@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   CUSTOM_ELEMENTS_SCHEMA,
+  OnInit,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -34,7 +35,7 @@ import { Router } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class AppLoginComponent {
+export class AppLoginComponent implements OnInit {
   readonly email = new FormControl('', [Validators.required, Validators.email]);
 
   errorEmailMessage = signal('');
@@ -47,6 +48,12 @@ export class AppLoginComponent {
     merge(this.password.statusChanges, this.password.valueChanges)
       .pipe(takeUntilDestroyed())
       .subscribe(() => this.updatePasswordErrorMessage());
+  }
+
+  ngOnInit() {
+    if (this.authService.isLoggedIn()) {
+      this.router.navigate(['/image-search']);
+    }
   }
 
   updateEmailErrorMessage() {

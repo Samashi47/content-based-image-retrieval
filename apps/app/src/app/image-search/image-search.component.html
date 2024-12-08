@@ -2,15 +2,13 @@
   <mat-tab label="Simple search">
     <mat-stepper [linear]="isLinear" #stepper>
       <mat-step [stepControl]="firstFormGroup">
-        <form [formGroup]="firstFormGroup">
+        <form [formGroup]="firstFormGroup" class="upload-form-container">
           <ng-template matStepLabel>Upload your image</ng-template>
           <mat-form-field class="input-container">
             <input
               matInput
               [value]="fileName"
-              formControlName="firstCtrl"
               placeholder="Select your image"
-              required
               readonly
             />
 
@@ -19,25 +17,67 @@
             </button>
             <input
               type="file"
+              accept="image/*"
               id="fileInput"
-              (change)="selectFile($event)"
+              (change)="selectFiles($event)"
               name="fileInput"
-              formControlName="firstCtrl"
-              required
+              multiple
+              class="file-input"
             />
           </mat-form-field>
 
           <div>
-            <button mat-button matStepperNext>Next</button>
+            <button
+              mat-button
+              matStepperNext
+              [disabled]="!(this.uploadedFiles.length > 0)"
+            >
+              Next
+            </button>
+            <button
+              mat-button
+              [disabled]="!(this.uploadedFiles.length > 0)"
+              (click)="deleteAllFiles()"
+            >
+              Reset
+            </button>
           </div>
         </form>
+        @if (uploadedFiles.length > 0) {
+        <div class="images-container">
+          @for (image of uploadedFiles; track $index; let i = $index) {
+          <mat-card class="image-card" appearance="outlined">
+            <mat-card-header>
+              <mat-card-subtitle>{{ image.blob.name }}</mat-card-subtitle>
+            </mat-card-header>
+            <img
+              class="image-card-image"
+              mat-card-image
+              [src]="uploadedFiles[i].sanitized"
+              alt="{{ image.blob.name }}"
+            />
+
+            <mat-card-actions>
+              <button mat-icon-button (click)="openImageEditor(i)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="deleteFile(i)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </mat-card-actions>
+          </mat-card>
+          }
+        </div>
+        }
       </mat-step>
       <mat-step>
         <ng-template matStepLabel>Results</ng-template>
         <p>You are now done.</p>
         <div>
           <button mat-button matStepperPrevious>Back</button>
-          <button mat-button (click)="stepper.reset()">Reset</button>
+          <button mat-button (click)="[deleteAllFiles(), stepper.reset()]">
+            Reset
+          </button>
         </div>
       </mat-step>
     </mat-stepper>
