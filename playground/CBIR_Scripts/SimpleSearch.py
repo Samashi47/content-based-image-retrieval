@@ -115,7 +115,7 @@ def process_database_images(root_folder, not_indexed):
                 continue
             img = cv2.resize(img, (400, 400))
             dominant_colors = get_dominant_colors(img)
-            texture = get_gabor_texture(img)
+            gabor = get_gabor_texture(img)
             color_hist = get_color_histogram(img)
             hu_moments = get_hu_moments(img)
             edge_hist = get_edge_histogram(img)
@@ -125,7 +125,7 @@ def process_database_images(root_folder, not_indexed):
                 'image_name': img_name,
                 'category': category,
                 'dominant_colors': dominant_colors,
-                'texture': texture,
+                'gabor': gabor,
                 'color_histogram': color_hist,
                 'hu_moments': hu_moments,
                 'edge_histogram': edge_hist,
@@ -141,7 +141,7 @@ def compute_distances(query_desc, db_desc):
     distances = []
     for doc in db_desc:
         dist_metrics = {
-            'gabor': np.linalg.norm(np.array(query_desc['gabor']) - np.array(doc['texture'])),
+            'gabor': np.linalg.norm(np.array(query_desc['gabor']) - np.array(doc['gabor'])),
             'edge_histogram': cv2.compareHist(e_hist1, 
                                             np.array(doc['edge_histogram'], dtype=np.float32), 
                                             cv2.HISTCMP_CHISQR),
@@ -224,6 +224,27 @@ def process_query_image(rand_img, dest_folder):
         'fourier_descriptors': fourier_desc
     }
     
+def plot_images(source_folder, dest_folder, rand_img, top_images, similarities, n=15):
+    rows = 4
+    cols = (n + 1) // rows + ((n + 1) % rows > 0)
+    _, axes = plt.subplots(rows, cols, figsize=(10, 10))
+
+    img1 = cv2.cvtColor(cv2.imread(os.path.join(dest_folder, rand_img)), cv2.COLOR_BGR2RGB)
+    axes[0, 0].imshow(img1)
+    axes[0, 0].set_title(f"Source:\n{rand_img}")
+    axes[0, 0].axis("off")
+    for i, (img_name, sim) in enumerate(top_images):
+        row = (i + 1) // cols
+        col = (i + 1) % cols
+        img_path = os.path.join(source_folder, similarities[i][0]['category'], img_name)
+        img2 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
+        axes[row, col].imshow(img2, cmap='gray')
+        axes[row, col].set_title(f"{similarities[i][0]['category']} - {img_name}\nSimilarity: {sim:.5f}")
+        axes[row, col].axis("off")
+    plt.tight_layout()
+    plt.show()
+
+
 def SimpleSearch(source_folder, dest_folder, query_desc, general_weights, weights, rand_img, n=15):
     if query_desc is None:
         print("Invalid query image.")
@@ -233,23 +254,7 @@ def SimpleSearch(source_folder, dest_folder, query_desc, general_weights, weight
         distances = compute_distances(query_desc, db_desc)
         similarities = calculate_similarities(distances, general_weights=general_weights, weights=weights)
         top_images = get_top_images(similarities, n)
-        rows = 4
-        cols = (n + 1) // rows + ((n + 1) % rows > 0)
-        fig, axes = plt.subplots(rows, cols, figsize=(15, 15))
-
-        img1 = cv2.cvtColor(cv2.imread(os.path.join(dest_folder, rand_img)), cv2.COLOR_BGR2RGB)
-        axes[0, 0].imshow(img1)
-        axes[0, 0].set_title(f"Source:\n{rand_img}")
-        axes[0, 0].axis("off")
-        for i, (img_name, sim) in enumerate(top_images):
-            row = (i + 1) // cols
-            col = (i + 1) % cols
-            img_path = os.path.join(source_folder, similarities[i][0]['category'], img_name)
-            img2 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
-            axes[row, col].imshow(img2, cmap='gray')
-            axes[row, col].set_title(f"{similarities[i][0]['category']} - {img_name}\nSimilarity: {sim:.5f}")
-            axes[row, col].axis("off")
-        plt.tight_layout()
-        plt.show()
+        
+        plot_images(source_folder, dest_folder, rand_img, top_images, similarities, n)
         
         return top_images, distances
