@@ -1,4 +1,11 @@
-import { Component, inject, OnInit, Input } from '@angular/core';
+import {
+  Component,
+  inject,
+  Inject,
+  OnInit,
+  Input,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';
 import {
   AbstractControl,
@@ -16,15 +23,31 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../auth.service';
 import { ImageSearchService } from '../image-search.service';
+import { PlotlyService } from '../plotly.service';
 import { Router } from '@angular/router';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { MatCardModule } from '@angular/material/card';
 import { NgxCroppedEvent, NgxPhotoEditorService } from 'ngx-photo-editor';
-import { StepperOrientation } from '@angular/material/stepper/testing';
+import { MatSelectModule } from '@angular/material/select';
+import {
+  MatDialog,
+  MatDialogActions,
+  MatDialogClose,
+  MatDialogContent,
+  MatDialogRef,
+  MatDialogTitle,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 
 interface result {
   image: string;
   similarity: number;
+}
+
+interface imageDescriptors {
+  dominant_colors: number[][];
+  color_histogram: number[][];
+  hu_moments: number[];
 }
 
 @Component({
@@ -39,6 +62,7 @@ interface result {
     MatFormFieldModule,
     MatInputModule,
     MatCardModule,
+    MatSelectModule,
   ],
   templateUrl: './image-search.component.html',
   styleUrl: './image-search.component.css',
@@ -50,6 +74,7 @@ export class ImageSearchComponent implements OnInit {
   private _router = inject(Router);
   private _domSanitizer = inject(DomSanitizer);
   private _ngxPhotoEditorService = inject(NgxPhotoEditorService);
+  readonly _dialog = inject(MatDialog);
 
   selectedImageIndex: number | null = null;
 
@@ -115,11 +140,13 @@ export class ImageSearchComponent implements OnInit {
   }*/
 
   deleteFile(index: number): void {
-    this.uploadedFiles.splice(index, 1);
-    this.updateFileName();
     if (this.selectedImageIndex === index) {
+      console.log(this.selectedImageIndex, index);
       this.selectedImageIndex = null;
     }
+    this.uploadedFiles.splice(index, 1);
+    this.updateFileName();
+    console.log(this.selectedImageIndex, index);
   }
 
   updateFileName(): void {
@@ -186,8 +213,16 @@ export class ImageSearchComponent implements OnInit {
       });
   }
 
-  search(): void {
+  descriptors(index: number): void {
+    this._dialog.open(DescriptorsDialog, {
+      data: { index: index, uploadedFiles: this.uploadedFiles },
+    });
+  }
+
+  simpleSearch(): void {
+    console.log('Selected image:', this.selectedImageIndex);
     if (this.selectedImageIndex !== null) {
+      console.log('Selected image:', this.selectedImageIndex);
       const selectedFile = this.uploadedFiles[this.selectedImageIndex].blob;
       this._imageSearchService.imageSimpleSearch(selectedFile).subscribe(
         (results) => {
@@ -199,5 +234,64 @@ export class ImageSearchComponent implements OnInit {
         }
       );
     }
+  }
+}
+
+@Component({
+  selector: 'descriptors-dialog',
+  templateUrl: 'descriptors-dialog.html',
+  imports: [
+    MatButtonModule,
+    MatDialogActions,
+    MatDialogClose,
+    MatDialogTitle,
+    MatDialogContent,
+  ],
+  styleUrl: './image-search.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class DescriptorsDialog {
+  constructor(
+    private plot: PlotlyService,
+    @Inject(MAT_DIALOG_DATA) public data: { index: number; uploadedFiles: any }
+  ) {}
+
+  private _imageSearchService = inject(ImageSearchService);
+  readonly dialogRef = inject(MatDialogRef<DescriptorsDialog>);
+
+  ngOnInit(): void {
+    const { index, uploadedFiles } = this.data;
+    const selectedFile = uploadedFiles[index].blob;
+    let dominantColors: number[][] = [];
+    let humoments: number[] = [];
+
+    this._imageSearchService.imageDescriptors(selectedFile).subscribe(
+      (results) => {
+        console.log('Descriptors:', results);
+        this.plot.plotHist(
+          'histPlot',
+          results.color_histogram[0],
+          results.color_histogram[1],
+          results.color_histogram[2]
+        );
+
+        this.plot.plotDominantColors(
+          'dominantColorContainer',
+          results.dominant_colors
+        );
+
+        // display hu moments in ddiv
+        humoments = results.hu_moments;
+        const humomentsDiv = document.getElementById('humomentsContainer');
+        for (let i = 0; i < humoments.length; i++) {
+          const p = document.createElement('p');
+          p.textContent = `Hu Moment ${i + 1}: ${humoments[i]}`;
+          humomentsDiv?.appendChild(p);
+        }
+      },
+      (error) => {
+        console.error('Descriptors error:', error);
+      }
+    );
   }
 }

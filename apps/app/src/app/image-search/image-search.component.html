@@ -33,7 +33,7 @@
               mat-button
               matStepperNext
               [disabled]="secondFormGroup.invalid"
-              (click)="search()"
+              (click)="simpleSearch()"
             >
               Next
             </button>
@@ -67,12 +67,17 @@
             />
 
             <mat-card-actions>
-              <button mat-icon-button (click)="openImageEditor(i)">
-                <mat-icon>edit</mat-icon>
+              <button mat-icon-button (click)="descriptors(i)">
+                <mat-icon>bar_chart</mat-icon>
               </button>
-              <button mat-icon-button color="warn" (click)="deleteFile(i)">
-                <mat-icon>delete</mat-icon>
-              </button>
+              <div>
+                <button mat-icon-button (click)="openImageEditor(i)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="deleteFile(i)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
             </mat-card-actions>
           </mat-card>
           }
@@ -84,7 +89,7 @@
         @if (uploadedFiles.length > 0) {
         <div class="results-container">
           @for (result of results; track $index; let i = $index) {
-          <mat-card class="result-card">
+          <mat-card class="result-card" appearance="outlined">
             <mat-card-header>
               <mat-card-subtitle>{{ "title" }}</mat-card-subtitle>
             </mat-card-header>
@@ -93,8 +98,13 @@
               <p>Similarity: {{ result.similarity }}</p>
             </mat-card-content>
             <mat-card-actions>
-              <button mat-button>LIKE</button>
-              <button mat-button>DISLIKE</button>
+              <mat-form-field style="width: 100%">
+                <mat-label>Relevance</mat-label>
+                <mat-select>
+                  <mat-option value="0">Relevant</mat-option>
+                  <mat-option value="1">Irrelevant</mat-option>
+                </mat-select>
+              </mat-form-field>
             </mat-card-actions>
           </mat-card>
           }

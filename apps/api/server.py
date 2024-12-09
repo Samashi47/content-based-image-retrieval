@@ -1,5 +1,7 @@
 from email.mime import image
+from turtle import color
 from urllib import response
+import cv2
 from flask import Response, request, Flask
 from flask_cors import CORS
 import json
@@ -13,6 +15,10 @@ import jwt
 import os
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.backends import default_backend
+from logic.descriptors import get_dominant_colors, get_color_histogram, get_hu_moments
+from PIL import Image
+import numpy as np
+import cv2
 
 class JSONEncoder(json.JSONEncoder):
     def default(self, o):
@@ -75,6 +81,35 @@ def simple_search():
     response.headers['Access-Control-Allow-Credentials'] = True
 
     return response 
+
+@app.route('/image/descriptors', methods=['POST'])
+def image_descriptors():
+    if 'image' not in request.files:
+        return Response(json.dumps({'message': 'No file part'}), mimetype='application/json', status=400)
+    
+    image = request.files['image']
+    if image.filename == '':
+        return Response(json.dumps({'message': 'No selected file'}), mimetype='application/json', status=400)
+
+    image = Image.open(image)
+    image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+
+    dominant_colors = get_dominant_colors(image)
+    color_histogram = get_color_histogram(image)
+    hu_moments = get_hu_moments(image)
+
+    response = Response(json.dumps({
+        'dominant_colors': dominant_colors,
+        'color_histogram': color_histogram,
+        'hu_moments': hu_moments
+    }), mimetype='application/json', status=200)
+
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'POST'
+    response.headers['Access-Control-Allow-Credentials'] = True
+
+    return response
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000, host='0.0.0.0')

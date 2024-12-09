@@ -100,3 +100,12 @@ mat-card-actions {
   display: flex;
   justify-content: space-between;
 }
+
+#plot {
+  background-color: #faf9fd;
+}
+
+.dominant-color-container {
+  display: flex;
+  margin-top: 16px;
+}
