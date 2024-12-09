@@ -280,7 +280,6 @@ export class DescriptorsDialog {
           results.dominant_colors
         );
 
-        // display hu moments in ddiv
         humoments = results.hu_moments;
         const humomentsDiv = document.getElementById('humomentsContainer');
         for (let i = 0; i < humoments.length; i++) {
