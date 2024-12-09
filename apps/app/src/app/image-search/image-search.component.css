@@ -69,13 +69,15 @@
   overflow: hidden;
 }
 
-.images-container {
+.images-container,
+.results-container {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
 }
 
-.image-card {
+.image-card,
+.result-card {
   width: 288px;
 }
 

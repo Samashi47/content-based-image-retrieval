@@ -1,3 +1,5 @@
+from email.mime import image
+from urllib import response
 from flask import Response, request, Flask
 from flask_cors import CORS
 import json
@@ -47,7 +49,32 @@ def login():
         return Response(json.dumps({'token': token}), mimetype='application/json', status=200)
     else:
         return Response(json.dumps({'message': 'Login Failed'}), mimetype='application/json', status=401) 
+
+@app.route('/image/simple-search', methods=['POST']) 
+# dummy endpoint to receive image and return 15 similar images
+def simple_search():
+    if 'image' not in request.files:
+        return Response(json.dumps({'message': 'No file part'}), mimetype='application/json', status=400)
     
+    image = request.files['image']
+    if image.filename == '':
+        return Response(json.dumps({'message': 'No selected file'}), mimetype='application/json', status=400)
+    
+    # Process the image here
+    print(f"Received image: {image.filename}")
+
+    # Dummy response
+    response_dict = [
+        {'image': 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png', 'similarity': random.randint(0, 100)}
+        for _ in range(15)
+    ]
+        
+    response = Response(json.dumps(response_dict), mimetype='application/json', status=200)
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'POST'
+    response.headers['Access-Control-Allow-Credentials'] = True
+
+    return response 
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000, host='0.0.0.0')

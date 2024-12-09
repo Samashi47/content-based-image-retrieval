@@ -1,4 +1,3 @@
-import { selectedCardValidator } from './../selected-card.directive';
 import { Component, inject, OnInit, Input } from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';
 import {
@@ -16,11 +15,17 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../auth.service';
+import { ImageSearchService } from '../image-search.service';
 import { Router } from '@angular/router';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { MatCardModule } from '@angular/material/card';
 import { NgxCroppedEvent, NgxPhotoEditorService } from 'ngx-photo-editor';
 import { StepperOrientation } from '@angular/material/stepper/testing';
+
+interface result {
+  image: string;
+  similarity: number;
+}
 
 @Component({
   selector: 'app-image-search',
@@ -41,6 +46,7 @@ import { StepperOrientation } from '@angular/material/stepper/testing';
 export class ImageSearchComponent implements OnInit {
   private _formBuilder = inject(FormBuilder);
   private _authService = inject(AuthService);
+  private _imageSearchService = inject(ImageSearchService);
   private _router = inject(Router);
   private _domSanitizer = inject(DomSanitizer);
   private _ngxPhotoEditorService = inject(NgxPhotoEditorService);
@@ -59,6 +65,7 @@ export class ImageSearchComponent implements OnInit {
   uploadedFiles: { blob: File; sanitized: string }[] = [];
   currentFile: File | null = null;
   fileName = 'Select your image(s)';
+  results: result[] = [];
 
   ngOnInit(): void {
     if (!this._authService.isLoggedIn()) {
@@ -139,8 +146,10 @@ export class ImageSearchComponent implements OnInit {
     this.uploadedFiles = [];
     this.updateFileName();
     this.selectedImageIndex = null;
+    this.results = [];
   }
 
+  /*
   selectFile(event: any): void {
     if (event.target.files && event.target.files[0]) {
       const file: File = event.target.files[0];
@@ -150,6 +159,7 @@ export class ImageSearchComponent implements OnInit {
       this.fileName = 'Select your image';
     }
   }
+  */
 
   /*async arrayBufferToBase64(buffer: Promise<ArrayBuffer>): Promise<string> {
     let binary = '';
@@ -174,5 +184,20 @@ export class ImageSearchComponent implements OnInit {
           this.uploadedFiles[index].sanitized = data.base64;
         }
       });
+  }
+
+  search(): void {
+    if (this.selectedImageIndex !== null) {
+      const selectedFile = this.uploadedFiles[this.selectedImageIndex].blob;
+      this._imageSearchService.imageSimpleSearch(selectedFile).subscribe(
+        (results) => {
+          this.results = results;
+          console.log('Search results:', this.results);
+        },
+        (error) => {
+          console.error('Search error:', error);
+        }
+      );
+    }
   }
 }

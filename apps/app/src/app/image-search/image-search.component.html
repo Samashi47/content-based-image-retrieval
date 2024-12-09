@@ -33,6 +33,7 @@
               mat-button
               matStepperNext
               [disabled]="secondFormGroup.invalid"
+              (click)="search()"
             >
               Next
             </button>
@@ -80,7 +81,25 @@
       </mat-step>
       <mat-step>
         <ng-template matStepLabel>Results</ng-template>
-        <p>You are now done.</p>
+        @if (uploadedFiles.length > 0) {
+        <div class="results-container">
+          @for (result of results; track $index; let i = $index) {
+          <mat-card class="result-card">
+            <mat-card-header>
+              <mat-card-subtitle>{{ "title" }}</mat-card-subtitle>
+            </mat-card-header>
+            <img mat-card-image [src]="result.image" alt="title" />
+            <mat-card-content>
+              <p>Similarity: {{ result.similarity }}</p>
+            </mat-card-content>
+            <mat-card-actions>
+              <button mat-button>LIKE</button>
+              <button mat-button>DISLIKE</button>
+            </mat-card-actions>
+          </mat-card>
+          }
+        </div>
+        }
         <div>
           <button mat-button matStepperPrevious>Back</button>
           <button mat-button (click)="[deleteAllFiles(), stepper.reset()]">
