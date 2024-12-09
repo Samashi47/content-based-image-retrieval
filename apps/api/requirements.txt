@@ -7,9 +7,16 @@ Flask==3.1.0
 Flask-Cors==5.0.0
 itsdangerous==2.2.0
 Jinja2==3.1.4
+joblib==1.4.2
 MarkupSafe==3.0.2
+numpy==2.2.0
+opencv-python==4.10.0.84
+pillow==11.0.0
 pycparser==2.22
 PyJWT==2.10.1
 pymongo==4.10.1
 python-dotenv==1.0.1
+scikit-learn==1.6.0
+scipy==1.14.1
+threadpoolctl==3.5.0
 Werkzeug==3.1.3
