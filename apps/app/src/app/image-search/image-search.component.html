@@ -1,36 +1,38 @@
 <mat-tab-group>
   <mat-tab label="Simple search">
     <mat-stepper [linear]="isLinear" #stepper>
-      <mat-step [stepControl]="firstFormGroup">
-        <form [formGroup]="firstFormGroup" class="upload-form-container">
-          <ng-template matStepLabel>Upload your image</ng-template>
-          <mat-form-field class="input-container">
-            <input
-              matInput
-              [value]="fileName"
-              placeholder="Select your image"
-              readonly
-            />
+      <mat-step [stepControl]="secondFormGroup">
+        <div class="upload-form-container">
+          <form [formGroup]="firstFormGroup">
+            <ng-template matStepLabel>Upload your image</ng-template>
+            <mat-form-field class="input-container">
+              <input
+                matInput
+                [value]="fileName"
+                placeholder="Select your image"
+                readonly
+              />
 
-            <button mat-icon-button color="primary" class="upload-btn">
-              <mat-icon>attach_file</mat-icon>
-            </button>
-            <input
-              type="file"
-              accept="image/*"
-              id="fileInput"
-              (change)="selectFiles($event)"
-              name="fileInput"
-              multiple
-              class="file-input"
-            />
-          </mat-form-field>
-
-          <div>
+              <button mat-icon-button color="primary" class="upload-btn">
+                <mat-icon>attach_file</mat-icon>
+              </button>
+              <input
+                type="file"
+                accept="image/*"
+                id="fileInput"
+                (change)="selectFiles($event)"
+                name="fileInput"
+                multiple
+                class="file-input"
+              />
+            </mat-form-field>
+          </form>
+          <form [formGroup]="secondFormGroup">
+            <input type="hidden" formControlName="secondCtrl" required />
             <button
               mat-button
               matStepperNext
-              [disabled]="!(this.uploadedFiles.length > 0)"
+              [disabled]="secondFormGroup.invalid"
             >
               Next
             </button>
@@ -41,19 +43,25 @@
             >
               Reset
             </button>
-          </div>
-        </form>
+          </form>
+        </div>
+
         @if (uploadedFiles.length > 0) {
         <div class="images-container">
           @for (image of uploadedFiles; track $index; let i = $index) {
-          <mat-card class="image-card" appearance="outlined">
+          <mat-card
+            class="image-card"
+            appearance="outlined"
+            [class.selected]="selectedImageIndex === i"
+            (click)="selectCard(i)"
+          >
             <mat-card-header>
               <mat-card-subtitle>{{ image.blob.name }}</mat-card-subtitle>
             </mat-card-header>
             <img
               class="image-card-image"
               mat-card-image
-              [src]="uploadedFiles[i].sanitized"
+              [src]="image.sanitized"
               alt="{{ image.blob.name }}"
             />
 

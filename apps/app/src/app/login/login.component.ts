@@ -100,19 +100,6 @@ export class AppLoginComponent implements OnInit {
         (data: any) => {
           this.authService.setToken(data.token);
           if (this.authService.isLoggedIn()) {
-            this.router.navigate(['/']);
-            console.log('Redirecting to home page');
-          }
-        },
-        (error) => {
-          console.error('Login failed', error);
-        }
-      );
-
-      this.authService.login(email, password).subscribe(
-        () => {
-          this.authService.setToken('token');
-          if (this.authService.isLoggedIn()) {
             this.router.navigate(['/image-search']);
             console.log('Redirecting to home page');
           }

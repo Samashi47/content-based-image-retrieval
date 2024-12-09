@@ -1,6 +1,15 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { selectedCardValidator } from './../selected-card.directive';
+import { Component, inject, OnInit, Input } from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';
-import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormsModule,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatStepperModule } from '@angular/material/stepper';
@@ -36,14 +45,19 @@ export class ImageSearchComponent implements OnInit {
   private _domSanitizer = inject(DomSanitizer);
   private _ngxPhotoEditorService = inject(NgxPhotoEditorService);
 
-  // firstCtrl should be when uploadedFiles is empty
+  selectedImageIndex: number | null = null;
+
   firstFormGroup = this._formBuilder.group({
     firstCtrl: [''],
   });
 
+  secondFormGroup = this._formBuilder.group({
+    secondCtrl: [null as number | null, Validators.required],
+  });
+
   isLinear = true;
   uploadedFiles: { blob: File; sanitized: string }[] = [];
-  currentFile?: File;
+  currentFile: File | null = null;
   fileName = 'Select your image(s)';
 
   ngOnInit(): void {
@@ -72,6 +86,16 @@ export class ImageSearchComponent implements OnInit {
     }
   }
 
+  selectCard(index: number): void {
+    if (this.selectedImageIndex === index) {
+      this.selectedImageIndex = null;
+      this.secondFormGroup.get('secondCtrl')?.setValue(null);
+    } else {
+      this.selectedImageIndex = index;
+      this.secondFormGroup.get('secondCtrl')?.setValue(index);
+    }
+  }
+
   /*
   selectFiles(event: any): void {
     if (event.target.files) {
@@ -86,6 +110,9 @@ export class ImageSearchComponent implements OnInit {
   deleteFile(index: number): void {
     this.uploadedFiles.splice(index, 1);
     this.updateFileName();
+    if (this.selectedImageIndex === index) {
+      this.selectedImageIndex = null;
+    }
   }
 
   updateFileName(): void {
@@ -111,6 +138,7 @@ export class ImageSearchComponent implements OnInit {
   deleteAllFiles(): void {
     this.uploadedFiles = [];
     this.updateFileName();
+    this.selectedImageIndex = null;
   }
 
   selectFile(event: any): void {

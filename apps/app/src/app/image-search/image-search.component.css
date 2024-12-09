@@ -85,6 +85,15 @@
   object-fit: cover;
 }
 
+.image-card {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.image-card.selected {
+  border: 1px solid var(--mat-sys-primary);
+}
+
 mat-card-actions {
   display: flex;
   justify-content: space-between;
