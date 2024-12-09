@@ -51,11 +51,14 @@ def get_gabor_texture(image):
         responses.append(filtered.mean())
     return responses
 
-def get_color_histogram(image, bins=(8, 8, 8)):
-    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    hist = cv2.calcHist([hsv], [0, 1, 2], None, bins, [0, 180, 0, 256, 0, 256])
-    cv2.normalize(hist, hist)
-    return hist.flatten().tolist()
+def get_color_histogram(image, bins=256):
+    channels = cv2.split(image)
+    histograms = []
+    for channel in channels:
+        hist = cv2.calcHist([channel], [0], None, [bins], [0, 256])
+        cv2.normalize(hist, hist)
+        histograms.append(hist.flatten().tolist())
+    return histograms
 
 
 def get_hu_moments(image):
@@ -140,6 +143,7 @@ def compute_distances(query_desc, db_desc):
     
     distances = []
     for doc in db_desc:
+        c_hist2 = np.array(doc['color_histogram'], dtype=np.float32)
         dist_metrics = {
             'gabor': np.linalg.norm(np.array(query_desc['gabor']) - np.array(doc['gabor'])),
             'edge_histogram': cv2.compareHist(e_hist1, 
@@ -147,9 +151,7 @@ def compute_distances(query_desc, db_desc):
                                             cv2.HISTCMP_CHISQR),
             'dominant_colors': np.linalg.norm(np.array(query_desc['dominant_colors']) - 
                                             np.array(doc['dominant_colors'])),
-            'color_histogram': cv2.compareHist(c_hist1,
-                                             np.array(doc['color_histogram'], dtype=np.float32),
-                                             cv2.HISTCMP_CHISQR),
+            'color_histogram': sum(cv2.compareHist(c1, c2, cv2.HISTCMP_CHISQR) for c1, c2 in zip(c_hist1, c_hist2))/3,
             'hu_moments': np.linalg.norm(np.array(query_desc['hu_moments']) - 
                                        np.array(doc['hu_moments'])),
             'fourier_descriptors': np.linalg.norm(np.array(query_desc['fourier_descriptors']) - 
