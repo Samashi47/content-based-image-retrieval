@@ -71,22 +71,11 @@ def update_weights(feedback_data, initial_weights):
     updated_weights = trace['weights'].mean(axis=0)
     return updated_weights
 
-def RFSearch(source_folder, dest_folder, rand_img, query_desc, general_weights, weights, distances, top_images, n=15):
-    if query_desc is None:
-        print("Invalid query image.")
-        return weights, None
-    
-    # Display top images and collect feedback
+def collect_feedback(top_images, individual_sims):
     feedback_data = []
-    # for i, (img_name, sim) in enumerate(top_images):
-    #     print(f"{i}: {img_name} - Similarity: {sim:.5f}")
-    relevant_indices = input("Enter indices of relevant images separated by spaces (e.g., '0 2 4'): ")
-    relevant_indices = list(map(int, relevant_indices.strip().split()))
-    
-    similarities, individual_sims = calc_similarities(distances, weights)
-    
-    for i, (img_name, sim) in enumerate(top_images):
-        if i in relevant_indices:
+    for i, (img_name, _) in enumerate(top_images):
+        response = input(f"Is the image {img_name} relevant? (y/n): ")
+        if response.lower() == 'y':
             label = 1
         else:
             label = 0
@@ -94,48 +83,57 @@ def RFSearch(source_folder, dest_folder, rand_img, query_desc, general_weights, 
             'features': individual_sims[i],
             'label': label
         })
-    
-    # Update weights using Bayesian logistic regression
-    initial_weights = np.array([weights[key] for key in ['color_histogram', 'dominant_colors', 'edge_histogram', 'gabor', 'hu_moments', 'fourier_descriptors']])
-    updated_weights = update_weights(feedback_data, initial_weights)
-    
-    # Update weights dictionary
-    weight_keys = ['color_histogram', 'dominant_colors', 'edge_histogram', 'gabor', 'hu_moments', 'fourier_descriptors']
-    weights_dict = weights.copy()  # Create a copy of the original weights dictionary
-    for key, value in zip(weight_keys, updated_weights):
-        weights_dict[key] = value
-    
+    return feedback_data
+
+def RFSearch(weights, source_folder, dest_folder, rand_img, n=15):
+    query_desc = process_query_image(rand_img, dest_folder)
+    if query_desc is None:
+        print("Invalid query image.")
+        return weight_history
+    if weights is None:
+        weights = {
+            'dominant_colors': 0.5,
+            'color_histogram': 0.5,
+            'fourier_descriptors': 0.5,
+            'hu_moments': 0.5,
+            'edge_histogram': 0.5,
+            'gabor': 0.5
+        }
+    weight_history = [weights.copy()]
+    collection = connect_to_db()
+    db_desc = list(collection.find())
+    distances = compute_distances(query_desc, db_desc)
     similarities, individual_sims = calc_similarities(distances, weights)
     top_images = get_top_images(similarities, n)
     plot_images(source_folder, dest_folder, rand_img, top_images, similarities, n)
     
-    return weights_dict
-
-def run_rf_loop(rand_img, weights, general_weights, source_folder, dest_folder):
-    continue_feedback = True
-    weight_history = []
-    query_desc = process_query_image(rand_img, dest_folder)
-    top_images, distances = SimpleSearch(source_folder, dest_folder, query_desc, general_weights, weights, rand_img, n=15)
-    
     plt.draw()
     plt.pause(0.001)
-    response = input("Do you want to provide feedback? (y/n): ")
-    
-    if response.lower() != 'y':
-        continue_feedback = False
-        
-    while continue_feedback:
-        weight_history.append(weights.copy())
-        new_weights = RFSearch(source_folder, dest_folder, rand_img, query_desc, general_weights, weights, distances, top_images, n=15)
-        weights = update_weights_smoothly(weights, new_weights, 0.1)
-        
-        # Normalize weights
-        weights = normalize_weights(weights)
-        
-        # Constrain weights to valid range
-        weights = constrain_weights(weights)
-        response = input("Do you want to provide more feedback? (y/n): ")
+    while True:
+        response = input("Do you want to provide feedback? (y/n): ")
         if response.lower() != 'y':
-            continue_feedback = False
+            break
+        
+        feedback_data = collect_feedback(top_images, individual_sims)
+        
+            # Update weights using Bayesian logistic regression
+        initial_weights = np.array([weights[key] for key in ['color_histogram', 'dominant_colors', 'edge_histogram', 'gabor', 'hu_moments', 'fourier_descriptors']])
+        updated_weights = update_weights(feedback_data, initial_weights)
+        
+        # Update weights dictionary
+        weight_keys = ['color_histogram', 'dominant_colors', 'edge_histogram', 'gabor', 'hu_moments', 'fourier_descriptors']
+        weights_dict = weights.copy()  # Create a copy of the original weights dictionary
+        for key, value in zip(weight_keys, updated_weights):
+            weights_dict[key] = value
             
+        weights = update_weights_smoothly(weights, weights_dict, 0.5)
+        weights = normalize_weights(weights)
+        weights = constrain_weights(weights)
+        weight_history.append(weights.copy())
+        similarities, individual_sims = calc_similarities(distances, weights)
+        top_images = get_top_images(similarities, n)
+        plot_images(source_folder, dest_folder, rand_img, top_images, similarities, n)
+        plt.draw()
+        plt.pause(0.001)
+        
     return weight_history
