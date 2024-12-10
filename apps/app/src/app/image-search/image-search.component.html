@@ -93,7 +93,7 @@
               Reset
             </button>
           </div>
-          @if (uploadedFiles.length > 0) {
+          @if (results.length > 0) {
           <div class="results-container">
             @for (result of results; track $index; let i = $index) {
             <mat-card class="result-card" appearance="outlined">
@@ -112,5 +112,145 @@
       </mat-step>
     </mat-stepper>
   </mat-tab>
-  <mat-tab label="Advanced search with relevance feedback"> Content 2 </mat-tab>
+  <mat-tab label="Advanced search with relevance feedback"
+    ><mat-stepper [linear]="isLinear" #stepper>
+      <mat-step [stepControl]="secondFormGroup">
+        <div class="upload-form-container">
+          <form [formGroup]="firstFormGroup">
+            <ng-template matStepLabel>Upload your image</ng-template>
+            <mat-form-field class="input-container">
+              <input
+                matInput
+                [value]="fileName"
+                placeholder="Select your image"
+                readonly
+              />
+
+              <button mat-icon-button color="primary" class="upload-btn">
+                <mat-icon>attach_file</mat-icon>
+              </button>
+              <input
+                type="file"
+                accept="image/*"
+                id="fileInput"
+                (change)="selectFiles($event)"
+                name="fileInput"
+                multiple
+                class="file-input"
+              />
+            </mat-form-field>
+          </form>
+          <form [formGroup]="secondFormGroup">
+            <input type="hidden" formControlName="secondCtrl" required />
+            <button
+              mat-button
+              matStepperNext
+              [disabled]="secondFormGroup.invalid"
+              (click)="advancedSearch()"
+            >
+              Next
+            </button>
+            <button
+              mat-button
+              [disabled]="!(this.uploadedFiles.length > 0)"
+              (click)="deleteAllFiles()"
+            >
+              Reset
+            </button>
+          </form>
+        </div>
+
+        @if (uploadedFiles.length > 0) {
+        <div class="images-container">
+          @for (image of uploadedFiles; track $index; let i = $index) {
+          <mat-card
+            class="image-card"
+            appearance="outlined"
+            [class.selected]="selectedImageIndex === i"
+            (click)="selectCard(i)"
+          >
+            <mat-card-header>
+              <mat-card-subtitle>{{ image.blob.name }}</mat-card-subtitle>
+            </mat-card-header>
+            <img
+              class="image-card-image"
+              mat-card-image
+              [src]="image.sanitized"
+              alt="{{ image.blob.name }}"
+            />
+
+            <mat-card-actions>
+              <button mat-icon-button (click)="descriptors(i)">
+                <mat-icon>bar_chart</mat-icon>
+              </button>
+              <div>
+                <button mat-icon-button (click)="openImageEditor(i)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="deleteFile(i)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </mat-card-actions>
+          </mat-card>
+          }
+        </div>
+        }
+      </mat-step>
+      <mat-step>
+        <ng-template matStepLabel>Results</ng-template>
+        <div class="results-outer-container">
+          <div class="advanced-results-nav-btns">
+            <div>
+              <button mat-button matStepperPrevious>Back</button>
+              <button mat-button (click)="[deleteAllFiles(), stepper.reset()]">
+                Reset
+              </button>
+            </div>
+            <button
+              mat-button
+              [disabled]="
+                thirdFormGroup.invalid || relevanceFeedback.includes('')
+              "
+              (click)="relevanceFeedbackSearch()"
+            >
+              Re-submit
+            </button>
+          </div>
+          @if (advancedResults.length > 0) {
+          <form class="results-container" [formGroup]="thirdFormGroup">
+            @for (result of advancedResults; track $index; let i = $index) {
+            <mat-card class="result-card" appearance="outlined">
+              <mat-card-header>
+                <mat-card-subtitle>{{ result.title }}</mat-card-subtitle>
+              </mat-card-header>
+              <img mat-card-image [src]="result.image" alt="title" />
+              <mat-card-content>
+                <p>Similarity: {{ result.similarity }}</p>
+              </mat-card-content>
+              <mat-card-actions>
+                <mat-form-field style="width: 100%">
+                  <mat-label>Relevance</mat-label>
+                  <mat-select
+                    required
+                    formControlName="thirdCtrl"
+                    [errorStateMatcher]="matcher"
+                    [(value)]="relevanceFeedback[i]"
+                  >
+                    <mat-option value="1">Relevant</mat-option>
+                    <mat-option value="0">Irrelevant</mat-option>
+                  </mat-select>
+                  @if (thirdCtrl.hasError('required')) {
+                  <mat-error>You must make a selection</mat-error>
+                  }
+                </mat-form-field>
+              </mat-card-actions>
+            </mat-card>
+            }
+          </form>
+          }
+        </div>
+      </mat-step>
+    </mat-stepper>
+  </mat-tab>
 </mat-tab-group>

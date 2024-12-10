@@ -15,7 +15,11 @@ import {
   ValidationErrors,
   ValidatorFn,
   Validators,
+  FormControl,
+  FormGroupDirective,
+  NgForm,
 } from '@angular/forms';
+import { ErrorStateMatcher } from '@angular/material/core';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatStepperModule } from '@angular/material/stepper';
@@ -45,10 +49,40 @@ interface result {
   similarity: number;
 }
 
+interface advancedResult {
+  title: string;
+  image: SafeUrl;
+  similarity: number;
+}
+
+interface weights {
+  dominant_colors: number;
+  color_histogram: number;
+  fourier_descriptors: number;
+  hu_moments: number;
+  edge_histogram: number;
+  gabor: number;
+}
+
 interface imageDescriptors {
   dominant_colors: number[][];
   color_histogram: number[][];
   hu_moments: number[];
+}
+
+/** Error when invalid control is dirty, touched, or submitted. */
+export class MyErrorStateMatcher implements ErrorStateMatcher {
+  isErrorState(
+    control: FormControl | null,
+    form: FormGroupDirective | NgForm | null
+  ): boolean {
+    const isSubmitted = form && form.submitted;
+    return !!(
+      control &&
+      control.invalid &&
+      (control.dirty || control.touched || isSubmitted)
+    );
+  }
 }
 
 @Component({
@@ -87,11 +121,19 @@ export class ImageSearchComponent implements OnInit {
     secondCtrl: [null as number | null, Validators.required],
   });
 
+  thirdCtrl = new FormControl('', Validators.required);
+  thirdFormGroup = this._formBuilder.group({
+    thirdCtrl: this.thirdCtrl,
+  });
+
+  matcher = new MyErrorStateMatcher();
   isLinear = true;
   uploadedFiles: { blob: File; sanitized: string }[] = [];
   currentFile: File | null = null;
   fileName = 'Select your image(s)';
   results: result[] = [];
+  advancedResults: advancedResult[] = [];
+  relevanceFeedback: string[] = Array.from({ length: 15 }, () => '');
 
   ngOnInit(): void {
     if (!this._authService.isLoggedIn()) {
@@ -176,6 +218,8 @@ export class ImageSearchComponent implements OnInit {
     this.updateFileName();
     this.selectedImageIndex = null;
     this.results = [];
+    this.advancedResults = [];
+    this.relevanceFeedback = Array.from({ length: 15 }, () => '');
   }
 
   /*
@@ -242,6 +286,46 @@ export class ImageSearchComponent implements OnInit {
         }
       );
     }
+  }
+
+  advancedSearch(): void {
+    console.log('Selected image:', this.selectedImageIndex);
+    if (this.selectedImageIndex !== null) {
+      console.log('Selected image:', this.selectedImageIndex);
+      const selectedFile = this.uploadedFiles[this.selectedImageIndex].blob;
+      this._imageSearchService.advancedSearch(selectedFile).subscribe(
+        (results) => {
+          this.advancedResults = results.map((result) => {
+            return {
+              title: result.title,
+              image: this.sanitize('data:image/jpeg;base64,' + result.image),
+              similarity: result.similarity,
+            };
+          });
+          console.log('Advanced search results:', results);
+        },
+        (error) => {
+          console.error('Advanced search error:', error);
+        }
+      );
+    }
+  }
+
+  relevanceFeedbackSearch(): void {
+    console.log('Selected image:', this.selectedImageIndex);
+    const relevance = this.relevanceFeedback.map((value) => {
+      return value === '0' ? false : true;
+    });
+    const weights: weights = {
+      dominant_colors: 0.5,
+      color_histogram: 0.5,
+      fourier_descriptors: 0.5,
+      hu_moments: 0.5,
+      edge_histogram: 0.5,
+      gabor: 0.5,
+    };
+
+    this._imageSearchService.relevanceFeedback(weights, relevance);
   }
 }
 
