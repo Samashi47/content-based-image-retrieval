@@ -49,7 +49,7 @@ export class ImageSearchService {
       .pipe(shareReplay());
   }
 
-  relevanceFeedback(weights: any, relevance: boolean[]): void {
+  relevanceFeedback(weights: any, relevance: number[]): void {
     const formData = new FormData();
     formData.append('weights', JSON.stringify(weights));
     formData.append('relevance', JSON.stringify(relevance));

@@ -314,7 +314,7 @@ export class ImageSearchComponent implements OnInit {
   relevanceFeedbackSearch(): void {
     console.log('Selected image:', this.selectedImageIndex);
     const relevance = this.relevanceFeedback.map((value) => {
-      return value === '0' ? false : true;
+      return value === '0' ? 0 : 1;
     });
     const weights: weights = {
       dominant_colors: 0.5,
