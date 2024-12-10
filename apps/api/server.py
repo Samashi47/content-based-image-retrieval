@@ -16,9 +16,11 @@ import os
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.backends import default_backend
 from logic.descriptors import get_dominant_colors, get_color_histogram, get_hu_moments
+from logic.search_helpers import process_query_image, SimpleSearch
 from PIL import Image
 import numpy as np
 import cv2
+import base64
 
 class JSONEncoder(json.JSONEncoder):
     def default(self, o):
@@ -26,6 +28,11 @@ class JSONEncoder(json.JSONEncoder):
             return str(o)
         return json.JSONEncoder.default(self, o)
 
+def encode_image_to_base64(image_path):
+        with open(image_path, 'rb') as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+        return encoded_string
+    
 app = Flask(__name__)
 CORS(app)
 
@@ -68,19 +75,21 @@ def simple_search():
     
     # Process the image here
     print(f"Received image: {image.filename}")
-
-    # Dummy response
+    query_desc = process_query_image(image)
+    top_images = SimpleSearch(query_desc, n=15)
+    
+    # Dummy response with image filename and similarity
+    
     response_dict = [
-        {'image': 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png', 'similarity': random.randint(0, 100)}
-        for _ in range(15)
+        {'image': encode_image_to_base64(img_path), 'similarity': sim} for img_path, sim in top_images
     ]
-        
+    
     response = Response(json.dumps(response_dict), mimetype='application/json', status=200)
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Methods'] = 'POST'
     response.headers['Access-Control-Allow-Credentials'] = True
-
-    return response 
+    
+    return response
 
 @app.route('/image/descriptors', methods=['POST'])
 def image_descriptors():
