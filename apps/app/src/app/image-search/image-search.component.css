@@ -76,6 +76,12 @@
   gap: 16px;
 }
 
+.results-outer-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .image-card,
 .result-card {
   width: 288px;

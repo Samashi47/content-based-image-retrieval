@@ -64,7 +64,6 @@ def login():
         return Response(json.dumps({'message': 'Login Failed'}), mimetype='application/json', status=401) 
 
 @app.route('/image/simple-search', methods=['POST']) 
-# dummy endpoint to receive image and return 15 similar images
 def simple_search():
     if 'image' not in request.files:
         return Response(json.dumps({'message': 'No file part'}), mimetype='application/json', status=400)
@@ -73,15 +72,12 @@ def simple_search():
     if image.filename == '':
         return Response(json.dumps({'message': 'No selected file'}), mimetype='application/json', status=400)
     
-    # Process the image here
     print(f"Received image: {image.filename}")
     query_desc = process_query_image(image)
     top_images = SimpleSearch(query_desc, n=15)
-    
-    # Dummy response with image filename and similarity
-    
+        
     response_dict = [
-        {'image': encode_image_to_base64(img_path), 'similarity': sim} for img_path, sim in top_images
+        {'title': img_path.replace("RSSCN7/", ""), 'image': encode_image_to_base64(img_path), 'similarity': sim} for img_path, sim in top_images
     ]
     
     response = Response(json.dumps(response_dict), mimetype='application/json', status=200)

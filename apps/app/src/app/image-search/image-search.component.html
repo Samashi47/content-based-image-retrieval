@@ -86,35 +86,28 @@
       </mat-step>
       <mat-step>
         <ng-template matStepLabel>Results</ng-template>
-        @if (uploadedFiles.length > 0) {
-        <div class="results-container">
-          @for (result of results; track $index; let i = $index) {
-          <mat-card class="result-card" appearance="outlined">
-            <mat-card-header>
-              <mat-card-subtitle>{{ "title" }}</mat-card-subtitle>
-            </mat-card-header>
-            <img mat-card-image [src]="result.image" alt="title" />
-            <mat-card-content>
-              <p>Similarity: {{ result.similarity }}</p>
-            </mat-card-content>
-            <mat-card-actions>
-              <mat-form-field style="width: 100%">
-                <mat-label>Relevance</mat-label>
-                <mat-select>
-                  <mat-option value="0">Relevant</mat-option>
-                  <mat-option value="1">Irrelevant</mat-option>
-                </mat-select>
-              </mat-form-field>
-            </mat-card-actions>
-          </mat-card>
+        <div class="results-outer-container">
+          <div>
+            <button mat-button matStepperPrevious>Back</button>
+            <button mat-button (click)="[deleteAllFiles(), stepper.reset()]">
+              Reset
+            </button>
+          </div>
+          @if (uploadedFiles.length > 0) {
+          <div class="results-container">
+            @for (result of results; track $index; let i = $index) {
+            <mat-card class="result-card" appearance="outlined">
+              <mat-card-header>
+                <mat-card-subtitle>{{ result.title }}</mat-card-subtitle>
+              </mat-card-header>
+              <img mat-card-image [src]="result.image" alt="title" />
+              <mat-card-content>
+                <p>Similarity: {{ result.similarity }}</p>
+              </mat-card-content>
+            </mat-card>
+            }
+          </div>
           }
-        </div>
-        }
-        <div>
-          <button mat-button matStepperPrevious>Back</button>
-          <button mat-button (click)="[deleteAllFiles(), stepper.reset()]">
-            Reset
-          </button>
         </div>
       </mat-step>
     </mat-stepper>

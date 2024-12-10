@@ -40,7 +40,8 @@ import {
 } from '@angular/material/dialog';
 
 interface result {
-  image: string;
+  title: string;
+  image: SafeUrl;
   similarity: number;
 }
 
@@ -110,6 +111,7 @@ export class ImageSearchComponent implements OnInit {
         reader.readAsDataURL(file);
 
         reader.onload = (e) => {
+          console.log(e.target?.result);
           this.uploadedFiles[i].sanitized = e.target?.result as string;
         };
       }
@@ -226,8 +228,14 @@ export class ImageSearchComponent implements OnInit {
       const selectedFile = this.uploadedFiles[this.selectedImageIndex].blob;
       this._imageSearchService.imageSimpleSearch(selectedFile).subscribe(
         (results) => {
-          this.results = results;
-          console.log('Search results:', this.results);
+          this.results = results.map((result) => {
+            return {
+              title: result.title,
+              image: this.sanitize('data:image/jpeg;base64,' + result.image),
+              similarity: result.similarity,
+            };
+          });
+          console.log('Search results:', results);
         },
         (error) => {
           console.error('Search error:', error);
@@ -262,7 +270,6 @@ export class DescriptorsDialog {
   ngOnInit(): void {
     const { index, uploadedFiles } = this.data;
     const selectedFile = uploadedFiles[index].blob;
-    let dominantColors: number[][] = [];
     let humoments: number[] = [];
 
     this._imageSearchService.imageDescriptors(selectedFile).subscribe(

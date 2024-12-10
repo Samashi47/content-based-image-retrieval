@@ -5,6 +5,7 @@ import { map, shareReplay } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
 interface searchResult {
+  title: string;
   image: string;
   similarity: number;
 }

@@ -2,6 +2,7 @@ from pymongo import MongoClient
 from logic.descriptors import *
 from PIL import Image
 import os
+import dotenv
 
 def compute_distances(query_desc, db_desc):
     """Calculate distances between query image and database images for each feature"""
@@ -87,10 +88,11 @@ def process_query_image(image):
 
 def get_top_images(similarities, x=15):
     top = similarities[:x]
-    return [ (os.path.join("apps\\api\\RSSCN7",doc['category'],doc['image_name']), sim) for doc, sim in top ]
+    return [ (os.path.join("RSSCN7",doc['category'],doc['image_name']), sim) for doc, sim in top ]
 
 def connect_to_db():
-    client = MongoClient('mongodb://localhost:27017/')
+    dotenv.load_dotenv()
+    client = MongoClient(os.getenv('MONGO_URL'))
     db = client['RSSCN7']
     collection = db['descriptors']
     return collection
@@ -103,7 +105,6 @@ def SimpleSearch(query_desc, n=15):
         db_desc = list(collection.find())
         distances = compute_distances(query_desc, db_desc)
         similarities = simple_similarity_calc(distances)
-        print(similarities[0])
         top_images = get_top_images(similarities, n)
         
         return top_images
