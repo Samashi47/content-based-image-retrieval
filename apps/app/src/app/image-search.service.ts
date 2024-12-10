@@ -10,6 +10,21 @@ interface searchResult {
   similarity: number;
 }
 
+interface weights {
+  dominant_colors: number;
+  color_histogram: number;
+  fourier_descriptors: number;
+  hu_moments: number;
+  edge_histogram: number;
+  gabor: number;
+}
+
+interface advancedResults {
+  images: searchResult[];
+  weights: weights;
+  query_id: string;
+}
+
 interface imageDescriptors {
   dominant_colors: number[][];
   color_histogram: number[][];
@@ -40,28 +55,29 @@ export class ImageSearchService {
       .pipe(shareReplay());
   }
 
-  advancedSearch(query: File): Observable<searchResult[]> {
+  advancedSearch(query: File): Observable<advancedResults> {
     const formData = new FormData();
     formData.append('image', query);
-
+    console.log(formData);
     return this.http
-      .post<searchResult[]>(`${API_URL}/image/advanced-search`, formData)
+      .post<advancedResults>(`${API_URL}/image/advanced-search`, formData)
       .pipe(shareReplay());
   }
 
-  relevanceFeedback(weights: any, relevance: number[]): void {
+  relevanceFeedback(
+    weights: any,
+    relevance: number[],
+    query_id: string,
+    top_image_names: string[]
+  ): Observable<advancedResults> {
     const formData = new FormData();
     formData.append('weights', JSON.stringify(weights));
     formData.append('relevance', JSON.stringify(relevance));
-
+    formData.append('query_id', query_id);
+    formData.append('top_image_names', JSON.stringify(top_image_names));
     console.log(formData);
-    this.http.post(`${API_URL}/image/relevance-feedback`, formData).subscribe(
-      (data) => {
-        console.log(data);
-      },
-      (error: HttpErrorResponse) => {
-        console.log(error.error);
-      }
-    );
+    return this.http
+      .post<advancedResults>(`${API_URL}/image/relevance-feedback`, formData)
+      .pipe(shareReplay());
   }
 }

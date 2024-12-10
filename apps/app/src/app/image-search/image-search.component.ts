@@ -49,12 +49,6 @@ interface result {
   similarity: number;
 }
 
-interface advancedResult {
-  title: string;
-  image: SafeUrl;
-  similarity: number;
-}
-
 interface weights {
   dominant_colors: number;
   color_histogram: number;
@@ -62,6 +56,12 @@ interface weights {
   hu_moments: number;
   edge_histogram: number;
   gabor: number;
+}
+
+interface advancedResults {
+  images: result[];
+  weights: weights;
+  query_id: string;
 }
 
 interface imageDescriptors {
@@ -132,7 +132,16 @@ export class ImageSearchComponent implements OnInit {
   currentFile: File | null = null;
   fileName = 'Select your image(s)';
   results: result[] = [];
-  advancedResults: advancedResult[] = [];
+  advancedResults: result[] = [];
+  weights: weights = {
+    dominant_colors: 0.5,
+    color_histogram: 0.5,
+    fourier_descriptors: 0.5,
+    hu_moments: 0.5,
+    edge_histogram: 0.5,
+    gabor: 0.5,
+  };
+  queryId = '';
   relevanceFeedback: string[] = Array.from({ length: 15 }, () => '');
 
   ngOnInit(): void {
@@ -295,13 +304,15 @@ export class ImageSearchComponent implements OnInit {
       const selectedFile = this.uploadedFiles[this.selectedImageIndex].blob;
       this._imageSearchService.advancedSearch(selectedFile).subscribe(
         (results) => {
-          this.advancedResults = results.map((result) => {
+          this.advancedResults = results.images.map((result) => {
             return {
               title: result.title,
               image: this.sanitize('data:image/jpeg;base64,' + result.image),
               similarity: result.similarity,
             };
           });
+          this.weights = results.weights;
+          this.queryId = results.query_id;
           console.log('Advanced search results:', results);
         },
         (error) => {
@@ -313,19 +324,36 @@ export class ImageSearchComponent implements OnInit {
 
   relevanceFeedbackSearch(): void {
     console.log('Selected image:', this.selectedImageIndex);
-    const relevance = this.relevanceFeedback.map((value) => {
-      return value === '0' ? 0 : 1;
-    });
-    const weights: weights = {
-      dominant_colors: 0.5,
-      color_histogram: 0.5,
-      fourier_descriptors: 0.5,
-      hu_moments: 0.5,
-      edge_histogram: 0.5,
-      gabor: 0.5,
-    };
+    if (this.selectedImageIndex !== null) {
+      const relevance = this.relevanceFeedback.map((value) => {
+        return value === '0' ? 0 : 1;
+      });
 
-    this._imageSearchService.relevanceFeedback(weights, relevance);
+      this._imageSearchService
+        .relevanceFeedback(
+          this.weights,
+          relevance,
+          this.queryId,
+          this.advancedResults.map((result) => result.title)
+        )
+        .subscribe(
+          (results) => {
+            this.advancedResults = results.images.map((result) => {
+              return {
+                title: result.title,
+                image: this.sanitize('data:image/jpeg;base64,' + result.image),
+                similarity: result.similarity,
+              };
+            });
+            this.weights = results.weights;
+            this.queryId = results.query_id;
+            console.log('Relevance feedback results:', results);
+          },
+          (error) => {
+            console.error('Relevance feedback error:', error);
+          }
+        );
+    }
   }
 }
 

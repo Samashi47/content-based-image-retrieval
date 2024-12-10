@@ -34,6 +34,7 @@ def get_hu_moments(image):
     hu = [-np.log10(np.abs(h) + epsilon).item() for h in hu]
     return hu
 
+
 def get_gabor_texture(image):
     def build_gabor_filters():
         filters = []
@@ -41,9 +42,12 @@ def get_gabor_texture(image):
             theta = theta * 45
             for sigma in (3, 5):
                 for frequency in (0.01, 0.05):
-                    kernel = cv2.getGaborKernel((5, 5), sigma, theta, frequency, 0.5, 0, ktype=cv2.CV_32F)
+                    kernel = cv2.getGaborKernel(
+                        (5, 5), sigma, theta, frequency, 0.5, 0, ktype=cv2.CV_32F
+                    )
                     filters.append(kernel)
         return filters
+
     filters = build_gabor_filters()
     responses = []
     for kernel in filters:
@@ -51,12 +55,14 @@ def get_gabor_texture(image):
         responses.append(filtered.mean())
     return responses
 
+
 def get_edge_histogram(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(gray, 100, 200)
     hist = cv2.calcHist([edges], [0], None, [256], [0, 256])
     cv2.normalize(hist, hist)
     return hist.flatten().tolist()
+
 
 def get_fourier_descriptors(image, n=20):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
