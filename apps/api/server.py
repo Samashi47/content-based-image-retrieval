@@ -145,6 +145,8 @@ def advanced_search():
     top_images, weights, individual_sims = AdvancedSearch(query_desc, n=15)
 
     query_desc["individual_sims"] = individual_sims
+    query_desc["top_image_names"] = top_images
+    query_desc["weigths"] = weights
     dotenv.load_dotenv()
     client = MongoClient(os.getenv("MONGO_URL"))
     db = client["RSSCN7"]
@@ -162,7 +164,6 @@ def advanced_search():
             }
             for img_path, sim in top_images
         ],
-        "weights": weights,
         "query_id": str(_id),
     }
 
@@ -179,10 +180,8 @@ def advanced_search():
 @app.route("/image/relevance-feedback", methods=["POST"])
 def relevance_feedback():
     data = request.json
-    weights = data["weights"]
     feedback_data = data["relevance"]
     query_id = data["query_id"]
-    top_image_names = data["top_image_names"]
 
     dotenv.load_dotenv()
     client = MongoClient(os.getenv("MONGO_URL"))
@@ -196,6 +195,9 @@ def relevance_feedback():
             mimetype="application/json",
             status=404,
         )
+
+    top_image_names = query_desc[0]["top_image_names"]
+    weights = query_desc[0]["weights"]
 
     individual_sims = sorted(
         [
@@ -211,7 +213,14 @@ def relevance_feedback():
     )
 
     collection.update_one(
-        {"_id": ObjectId(query_id)}, {"$set": {"individual_sims": individual_sims}}
+        {"_id": ObjectId(query_id)},
+        {
+            "$set": {
+                "individual_sims": individual_sims,
+                "top_image_names": top_image_names,
+                "weights": weights,
+            }
+        },
     )
 
     response_dict = {
@@ -223,7 +232,6 @@ def relevance_feedback():
             }
             for img_path, sim in top_images
         ],
-        "weights": weights,
         "query_id": query_id,
     }
 

@@ -311,7 +311,6 @@ export class ImageSearchComponent implements OnInit {
               similarity: result.similarity,
             };
           });
-          this.weights = results.weights;
           this.queryId = results.query_id;
           console.log('Advanced search results:', results);
         },
@@ -330,12 +329,7 @@ export class ImageSearchComponent implements OnInit {
       });
 
       this._imageSearchService
-        .relevanceFeedback(
-          this.weights,
-          relevance,
-          this.queryId,
-          this.advancedResults.map((result) => result.title)
-        )
+        .relevanceFeedback(relevance, this.queryId)
         .subscribe(
           (results) => {
             this.advancedResults = results.images.map((result) => {
@@ -345,7 +339,6 @@ export class ImageSearchComponent implements OnInit {
                 similarity: result.similarity,
               };
             });
-            this.weights = results.weights;
             this.queryId = results.query_id;
             console.log('Relevance feedback results:', results);
           },

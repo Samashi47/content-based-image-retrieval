@@ -21,7 +21,6 @@ interface weights {
 
 interface advancedResults {
   images: searchResult[];
-  weights: weights;
   query_id: string;
 }
 
@@ -65,16 +64,12 @@ export class ImageSearchService {
   }
 
   relevanceFeedback(
-    weights: any,
     relevance: number[],
-    query_id: string,
-    top_image_names: string[]
+    query_id: string
   ): Observable<advancedResults> {
     const formData = new FormData();
-    formData.append('weights', JSON.stringify(weights));
     formData.append('relevance', JSON.stringify(relevance));
     formData.append('query_id', query_id);
-    formData.append('top_image_names', JSON.stringify(top_image_names));
     console.log(formData);
     return this.http
       .post<advancedResults>(`${API_URL}/image/relevance-feedback`, formData)
