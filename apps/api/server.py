@@ -148,7 +148,7 @@ def advanced_search():
 
     query_desc["individual_sims"] = individual_sims
     query_desc["top_image_names"] = [
-        re.sub(r"RSSCN7\/\w+\/", "", img_path) for img_path, _ in top_images
+        re.sub(r"RSSCN7\\\w+\\", "", img_path) for img_path, _ in top_images
     ]
     print(query_desc["top_image_names"])
     query_desc["weights"] = weights
@@ -217,7 +217,7 @@ def relevance_feedback():
     )
 
     top_images, weights, individual_sims = RelevanceFeedbackSearch(
-        query_desc, feedback_data, individual_sims, weights, n=15
+        query_desc[0], feedback_data, individual_sims, weights, n=15
     )
 
     collection.update_one(
