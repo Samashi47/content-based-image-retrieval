@@ -1,4 +1,5 @@
 from email.mime import image
+import re
 from turtle import color
 from urllib import response
 import cv2
@@ -46,9 +47,10 @@ app = Flask(__name__)
 CORS(app)
 
 
-@app.route("/")
+@app.route("/", methods=["POST"])
 def home():
-    return "Hello World"
+    print(request.json)
+    return "Hello, World!"
 
 
 @app.route("/auth/login", methods=["POST"])
@@ -145,8 +147,11 @@ def advanced_search():
     top_images, weights, individual_sims = AdvancedSearch(query_desc, n=15)
 
     query_desc["individual_sims"] = individual_sims
-    query_desc["top_image_names"] = top_images
-    query_desc["weigths"] = weights
+    query_desc["top_image_names"] = [
+        re.sub(r"RSSCN7\/\w+\/", "", img_path) for img_path, _ in top_images
+    ]
+    print(query_desc["top_image_names"])
+    query_desc["weights"] = weights
     dotenv.load_dotenv()
     client = MongoClient(os.getenv("MONGO_URL"))
     db = client["RSSCN7"]
@@ -180,16 +185,18 @@ def advanced_search():
 @app.route("/image/relevance-feedback", methods=["POST"])
 def relevance_feedback():
     data = request.json
-    feedback_data = data["relevance"]
+    feedback_data = json.loads(data["relevance"])
     query_id = data["query_id"]
-
+    print(f"Received feedback for query: {query_id}")
+    print(type(feedback_data[0]))
     dotenv.load_dotenv()
     client = MongoClient(os.getenv("MONGO_URL"))
     db = client["RSSCN7"]
     collection = db["temp_queries_desc"]
     query_desc = collection.find({"_id": ObjectId(query_id)})
+    query_desc = list(query_desc)
 
-    if query_desc.count() == 0:
+    if not query_desc or len(query_desc) == 0:
         return Response(
             json.dumps({"message": "Query not found"}),
             mimetype="application/json",
@@ -197,6 +204,7 @@ def relevance_feedback():
         )
 
     top_image_names = query_desc[0]["top_image_names"]
+    print(top_image_names)
     weights = query_desc[0]["weights"]
 
     individual_sims = sorted(

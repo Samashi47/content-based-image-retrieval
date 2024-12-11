@@ -192,11 +192,12 @@ def update_weights_smoothly(old_weights, new_weights, learning_rate=0.1):
 
 
 def update_weights(feedback_data, initial_weights):
-    features = [list(feed["features"].values()) for feed in feedback_data]
+    features = [list(feed["features"].values())[1:] for feed in feedback_data]
     labels = [feed["label"] for feed in feedback_data]
 
     features = np.array(features)
     labels = np.array(labels)
+    print(features.shape, labels.shape)
     num_features = features.shape[1]
 
     with pm.Model() as model:

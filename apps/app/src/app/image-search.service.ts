@@ -1,5 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpHeaders,
+} from '@angular/common/http';
 import { API_URL } from './env';
 import { map, shareReplay } from 'rxjs/operators';
 import { Observable } from 'rxjs';
@@ -67,12 +71,20 @@ export class ImageSearchService {
     relevance: number[],
     query_id: string
   ): Observable<advancedResults> {
-    const formData = new FormData();
-    formData.append('relevance', JSON.stringify(relevance));
-    formData.append('query_id', query_id);
-    console.log(formData);
+    const data = { relevance: JSON.stringify(relevance), query_id: query_id };
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST',
+      }),
+    };
+
+    console.log(data, httpOptions);
     return this.http
-      .post<advancedResults>(`${API_URL}/image/relevance-feedback`, formData)
+      .post<advancedResults>(`${API_URL}/image/relevance-feedback`, data, {
+        headers: httpOptions.headers,
+      })
       .pipe(shareReplay());
   }
 }
