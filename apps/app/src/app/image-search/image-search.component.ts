@@ -152,6 +152,7 @@ export class ImageSearchComponent implements OnInit {
 
   selectFiles(event: any): void {
     if (event.target.files) {
+      const l = this.uploadedFiles.length;
       for (let i = 0; i < event.target.files.length; i++) {
         const file = event.target.files[i];
         this.uploadedFiles.push({
@@ -162,8 +163,7 @@ export class ImageSearchComponent implements OnInit {
         reader.readAsDataURL(file);
 
         reader.onload = (e) => {
-          console.log(e.target?.result);
-          this.uploadedFiles[i].sanitized = e.target?.result as string;
+          this.uploadedFiles[i + l].sanitized = e.target?.result as string;
         };
       }
 
@@ -181,25 +181,13 @@ export class ImageSearchComponent implements OnInit {
     }
   }
 
-  /*
-  selectFiles(event: any): void {
-    if (event.target.files) {
-      for (let i = 0; i < event.target.files.length; i++) {
-        this.uploadedFiles.push(event.target.files[i]);
-      }
-      this.saveFilesToSession();
-      this.updateFileName();
-    }
-  }*/
-
   deleteFile(index: number): void {
     if (this.selectedImageIndex === index) {
-      console.log(this.selectedImageIndex, index);
       this.selectedImageIndex = null;
+      this.secondFormGroup.get('secondCtrl')?.setValue(null);
     }
     this.uploadedFiles.splice(index, 1);
     this.updateFileName();
-    console.log(this.selectedImageIndex, index);
   }
 
   updateFileName(): void {
@@ -209,49 +197,15 @@ export class ImageSearchComponent implements OnInit {
         : 'Select your image(s)';
   }
 
-  /*
-  saveFilesToSession(): void {
-    sessionStorage.setItem('uploadedFiles', JSON.stringify(this.uploadedFiles));
-  }
-
-  loadFilesFromSession(): void {
-    const files = sessionStorage.getItem('uploadedFiles');
-    if (files) {
-      this.uploadedFiles = JSON.parse(files);
-      this.updateFileName();
-    }
-  }*/
-
   deleteAllFiles(): void {
     this.uploadedFiles = [];
     this.updateFileName();
     this.selectedImageIndex = null;
+    this.secondFormGroup.get('secondCtrl')?.setValue(null);
     this.results = [];
     this.advancedResults = [];
     this.relevanceFeedback = Array.from({ length: 15 }, () => '');
   }
-
-  /*
-  selectFile(event: any): void {
-    if (event.target.files && event.target.files[0]) {
-      const file: File = event.target.files[0];
-      this.currentFile = file;
-      this.fileName = this.currentFile.name;
-    } else {
-      this.fileName = 'Select your image';
-    }
-  }
-  */
-
-  /*async arrayBufferToBase64(buffer: Promise<ArrayBuffer>): Promise<string> {
-    let binary = '';
-    const bytes = new Uint8Array(await buffer);
-    const len = bytes.byteLength;
-    for (let i = 0; i < len; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return window.btoa(binary);
-  }*/
 
   sanitize(url: string): SafeUrl {
     return this._domSanitizer.bypassSecurityTrustUrl(url);
@@ -347,6 +301,11 @@ export class ImageSearchComponent implements OnInit {
           }
         );
     }
+  }
+
+  logout(): void {
+    this._authService.logout();
+    this._router.navigate(['/login']);
   }
 }
 

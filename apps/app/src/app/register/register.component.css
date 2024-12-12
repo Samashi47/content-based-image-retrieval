@@ -7,19 +7,13 @@ main {
   align-items: center;
 }
 
-.login-container {
+.register-container {
   display: flex;
   flex-direction: column;
   gap: 4px;
   width: 500px;
 }
 
-.login-container > * {
+.register-container > * {
   width: 100%;
-}
-
-.login-button-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 }

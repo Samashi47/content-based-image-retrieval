@@ -23,9 +23,9 @@ import { AuthService } from '../auth.service';
 import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.css',
+  selector: 'app-register',
+  templateUrl: './register.component.html',
+  styleUrl: './register.component.css',
   imports: [
     MatFormFieldModule,
     MatIconModule,
@@ -37,12 +37,12 @@ import { Router } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class AppLoginComponent implements OnInit {
+export class AppRegisterComponent implements OnInit {
   private _snackBar = inject(MatSnackBar);
 
   openSnackBar(message: string, action: string) {
     return this._snackBar.open(message, action, {
-      duration: 2000,
+      duration: 5000,
     });
   }
 
@@ -104,27 +104,27 @@ export class AppLoginComponent implements OnInit {
       console.log('Form submitted');
       const email = this.email.value ?? '';
       const password = this.password.value ?? '';
-      const response = this.authService.login(email, password);
+      const response = this.authService.register(email, password);
 
       response.subscribe(
         (data: any) => {
-          this.authService.setToken(data.token);
-          if (this.authService.isLoggedIn()) {
-            let snackBarRef = this.openSnackBar('Login successful', 'Dismiss');
-            snackBarRef.afterDismissed().subscribe(() => {
-              this.router.navigate(['/image-search']);
-            });
-            snackBarRef.onAction().subscribe(() => {
-              this.router.navigate(['/image-search']);
-            });
-          }
+          let snackBarRef = this.openSnackBar(
+            'Registration successful, you will be redirected to the login page',
+            'Close'
+          );
+          snackBarRef.afterDismissed().subscribe(() => {
+            this.router.navigate(['/login']);
+          });
+          snackBarRef.onAction().subscribe(() => {
+            this.router.navigate(['/login']);
+          });
         },
         (error) => {
-          let snackBarRef = this.openSnackBar('Invalid credentials', 'Dismiss');
+          this.openSnackBar('Error: ' + error, 'Close');
         }
       );
     } else {
-      let snackBarRef = this.openSnackBar('Invalid form', 'Dismiss');
+      this.openSnackBar('Form invalid', 'Close');
     }
   }
 }

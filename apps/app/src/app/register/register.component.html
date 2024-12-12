@@ -1,6 +1,6 @@
 <main class="main">
-  <form class="login-container" (ngSubmit)="submit()">
-    <h1>Login</h1>
+  <form class="register-container" (ngSubmit)="submit()">
+    <h1>Register</h1>
     <mat-form-field>
       <mat-label>Enter your email</mat-label>
       <input
@@ -37,11 +37,8 @@
         <mat-icon>{{ hide() ? "visibility_off" : "visibility" }}</mat-icon>
       </button>
     </mat-form-field>
-    <div class="login-button-container">
-      <button mat-flat-button type="submit">
-        <span>Login</span>
-      </button>
-      <a href="/register">You don't have an account? Register here</a>
-    </div>
+    <button mat-flat-button type="submit">
+      <span>Register</span>
+    </button>
   </form>
 </main>

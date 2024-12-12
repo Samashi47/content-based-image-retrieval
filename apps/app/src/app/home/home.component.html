@@ -1,0 +1,36 @@
+<main class="main">
+  <div class="landing-content-container">
+    <img src="image.jfif" alt="image" class="landing-page-img" />
+    <div class="landing-page-text">
+      Welcome to our web application designed to implement a robust
+      Content-Based Image Retrieval (CBIR) system that enables efficient image
+      search and management through visual features and relevance feedback
+      mechanisms. Users can upload, download, delete, and categorize images into
+      predefined classes, as well as generate new images by applying
+      transformations like cropping and scaling. The system computes and
+      displays visual descriptors for images, including color histograms,
+      dominant colors, Gabor texture filters, Hu moments, and additional custom
+      descriptors. It supports both basic search to retrieve visually similar
+      images and an advanced Bayesian relevance feedback mechanism to
+      iteratively refine results, providing an intuitive and dynamic way to
+      explore the RSSCN7 dataset, which consists of 2,800 images categorized
+      into seven scene types such as Residential, Forest, and Industry.
+    </div>
+  </div>
+</main>
+
+<div class="user-actions">
+  <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="User menu">
+    <mat-icon>person</mat-icon>
+  </button>
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item (click)="redirectTo('login')">
+      <mat-icon>login</mat-icon>
+      <span>Login</span>
+    </button>
+    <button mat-menu-item (click)="redirectTo('register')">
+      <mat-icon>app_registration</mat-icon>
+      <span>Register</span>
+    </button>
+  </mat-menu>
+</div>

@@ -125,3 +125,9 @@ mat-card-actions {
   display: flex;
   justify-content: space-between;
 }
+
+.logout-btn {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+}

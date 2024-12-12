@@ -1,16 +1,11 @@
-from email.mime import image
 import re
-from turtle import color
-from urllib import response
 import cv2
 from flask import Response, request, Flask
 from flask_cors import CORS
 import json
-import random
 import datetime
 import hashlib
 from pymongo.mongo_client import MongoClient
-from pymongo.server_api import ServerApi
 from bson import ObjectId
 import jwt
 import os
@@ -55,15 +50,25 @@ def home():
 
 @app.route("/auth/login", methods=["POST"])
 def login():
-    hash_func = hashlib.sha256()
     data = request.json
+    email = data["email"]
+    dotenv.load_dotenv()
+    client = MongoClient(os.getenv("MONGO_URL"))
+    db = client["RSSCN7"]
+    collection = db["accounts"]
+    user = collection.find_one({"email": email})
+    if not user:
+        return Response(
+            json.dumps({"message": "User does not exist"}),
+            mimetype="application/json",
+            status=404,
+        )
+
+    hash_func = hashlib.sha256()
     hash_func.update(data["password"].encode())
     hashed_password = hash_func.hexdigest()
-    hash_func = hashlib.sha256()
-    hash_func.update("12345678".encode())
-    test_hashed_password = hash_func.hexdigest()
 
-    if data["email"] == "test@test.com" and hashed_password == test_hashed_password:
+    if data["email"] == user["email"] and hashed_password == user["password"]:
         private_key = open(".ssh/jwt-key", "rb").read()
         key = load_pem_private_key(
             private_key, password=None, backend=default_backend()
@@ -83,6 +88,37 @@ def login():
             mimetype="application/json",
             status=401,
         )
+
+
+@app.route("/auth/register", methods=["POST"])
+def register():
+    data = request.json
+    email = data["email"]
+    dotenv.load_dotenv()
+    client = MongoClient(os.getenv("MONGO_URL"))
+    db = client["RSSCN7"]
+    collection = db["accounts"]
+    user = collection.find_one({"email": email})
+    if user:
+        return Response(
+            json.dumps({"message": "User already exists"}),
+            mimetype="application/json",
+            status=409,
+        )
+
+    hash_func = hashlib.sha256()
+    hash_func.update(data["password"].encode())
+    hashed_password = hash_func.hexdigest()
+    user = {
+        "email": email,
+        "password": hashed_password,
+    }
+    collection.insert_one(user)
+    return Response(
+        json.dumps({"message": "User created successfully"}),
+        mimetype="application/json",
+        status=201,
+    )
 
 
 @app.route("/image/simple-search", methods=["POST"])
@@ -148,7 +184,7 @@ def advanced_search():
 
     query_desc["individual_sims"] = individual_sims
     query_desc["top_image_names"] = [
-        re.sub(r"RSSCN7\\\w+\\", "", img_path) for img_path, _ in top_images
+        re.sub(r"RSSCN7\/\w+\/", "", img_path) for img_path, _ in top_images
     ]
     print(query_desc["top_image_names"])
     query_desc["weights"] = weights
