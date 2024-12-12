@@ -3,7 +3,7 @@ from logic.descriptors import *
 from PIL import Image
 import os
 import dotenv
-import pymc3 as pm
+import pymc as pm
 
 
 def compute_distances(query_desc, db_desc):
