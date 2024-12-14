@@ -293,7 +293,9 @@ export class ImageSearchComponent implements OnInit {
                 similarity: result.similarity,
               };
             });
+            this.relevanceFeedback = Array.from({ length: 15 }, () => '');
             this.queryId = results.query_id;
+            this.thirdFormGroup.get('thirdCtrl')?.setValue('');
             console.log('Relevance feedback results:', results);
           },
           (error) => {
