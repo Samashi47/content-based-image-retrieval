@@ -1,13 +1,43 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
 cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
+title: >-
+  Content-Based Image Retrieval system based on Bayesian
+  Relevance Feedback
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
 authors:
-- family-names: "Samady"
-  given-names: "Ahmed"
-- family-names: "Chibani"
-  given-names: "Fahd"
-- family-names: "Fakhre-Eddine"
-  given-names: "Mohamed Amine"
-title: "Content-Based Image Retrieval system based on Bayesian Relevance Feedback"
-version: 2.0.4
-date-released: 2024-12-15
-url: "https://github.com/Samashi47/content-based-image-retrieval/""
+  - given-names: Ahmed
+    family-names: Samady
+    email: ahmed.samady@etu.uae.ac.ma
+  - given-names: Fahd
+    family-names: Chibani
+    email: fahd.chibani@etu.uae.ac.ma
+  - given-names: Mohamed Amine
+    family-names: Fakhre-Eddine
+    email: contact@fakhreeddine.dev
+repository-code: >-
+  https://github.com/Samashi47/content-based-image-retrieval/
+abstract: >-
+  The theory, design principles, implementation, and
+  performance outcomes of our two-week-long content-based
+  image retrieval (CBIR) system are presented in this paper.
+  Furthermore, we suggest a Bayesian Inference-based
+  relevance feedback method. In order to achieve this, we
+  use labels to determine whether a query is relevant. We
+  then use a Bernoulli likelihood model, a Gaussian model,
+  and Markov Chain Monte Carlo (MCMC) sampling in order, to
+  update the weights of each feature, which improves and
+  refines the results of a user query. Lastly, we
+  demonstrated our implementation validating the theoretical
+  conclusions.
+keywords:
+  - Content-Based Image Retrieval (CBIR)
+  - Bayesian Inference
+  - Relevance Feedback
+  - Image Search
+license: MIT
+date-released: "2024-12-15"
