@@ -75,7 +75,7 @@ def login():
         )
         payload = {
             "email": "test@test.com",
-            "exp": datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1),
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(days=1)
         }
         token = jwt.encode(payload, key, algorithm="RS256")
 
